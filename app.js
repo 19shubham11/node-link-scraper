@@ -7,6 +7,7 @@ var links_arr = [];
 
 // no of concurrent requests
 var concurrent_requests = 5;
+
 var counter = concurrent_requests;
 var activeRequests = 0;
 var file = fs.createWriteStream('output.csv');
@@ -25,10 +26,12 @@ function scrapeURL (url){
 		$('a').each(function() {
 		var text = $(this).text();
 		var link = $(this).attr('href');
+
+		//check for duplicate links in the array and also belonging to the same subdomain.
 		if(link && link.includes('http') && link!==url  && !links_arr.includes(link) && link.match(/medium/) ){
 			links_arr.push(link)
 			file.write(link+'\n')
-		}
+			}
 		
 		})
 
@@ -41,11 +44,11 @@ function scrapeURL (url){
 }
 
 
-
-function concurrentRequests(links){
+function concurrentRequests(link){
 	console.log('activeRequests',activeRequests)
-  	scrapeURL(links)
+  	scrapeURL(link)
   	.done(function(){
+  		//links before links_arr[counter] have already been written
   	if(counter !== links_arr.length){
   		concurrentRequests(links_arr[counter]);
   	 	 counter++;
@@ -74,10 +77,9 @@ console.log('...scraping',url)
 scrapeURL(url)
 .then(function(resp){
 	activeRequests = 0
-	//homepage
 	// console.log('resp',resp)
 	looper(resp)
-	//make looper async
+	//make looper async?
 
 },function(err){
 	console.log('ERROR',err)
