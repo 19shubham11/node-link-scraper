@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/shubham1911/node-link-scraper/issues"
   },
-  "homepage": "https://github.com/shubham1911/node-link-scraper#readme"
+  "homepage": "https://github.com/shubham1911/node-link-scraper#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "q": "^1.5.1",
+    "request": "^2.83.0"
+  }
 }
