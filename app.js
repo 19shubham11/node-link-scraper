@@ -1,42 +1,47 @@
+//this is the implementation with Q module for promises
+
 var request = require("request");
 var cheerio = require ("cheerio");
 var Q = require("q");
+var moment = require('moment')
 var fs = require('fs');
 
 var links_arr = [];
 
+var curr_time = moment().format("DDMMMYYYY_HH:mm:ss")
 // no of concurrent requests
 var concurrent_requests = 5;
 
 var counter = concurrent_requests;
 var activeRequests = 0;
-var file = fs.createWriteStream('output.csv');
+var file = fs.createWriteStream(curr_time+".csv");
 
+var url = 'http://www.medium.com/'
 
 function scrapeURL (url){
 	var d = Q.defer();
 	activeRequests++;
-	request(url , function(err,resp,body){
-		if(err){
-			console.log('Error:',err)
-			d.reject(err)
-		}
-		else{
-		var $ = cheerio.load(body);
-		$('a').each(function() {
-		var text = $(this).text();
-		var link = $(this).attr('href');
-
-		//check for duplicate links in the array and also belonging to the same subdomain.
-		if(link && link.includes('http') && link!==url  && !links_arr.includes(link) && link.match(/medium/) ){
-			links_arr.push(link)
-			file.write(link+'\n')
+		request(url , function(err,resp,body){
+			if(err){
+				console.log('Error:',err)
+				d.reject(err)
 			}
-		
-		})
+			else{
+			var $ = cheerio.load(body);
+			$('a').each(function() {
+			var text = $(this).text();
+			var link = $(this).attr('href');
 
-		d.resolve(links_arr)
-	}
+			//check for duplicate links in the array
+			if(link && link.includes('http') && link!==url  && !links_arr.includes(link) && link.match(/medium/) ){
+				links_arr.push(link)
+				file.write(link+'\n')
+				}
+			
+			})
+
+			d.resolve(links_arr)
+		}
 
 	})
 
@@ -46,22 +51,22 @@ function scrapeURL (url){
 
 function concurrentRequests(link){
 	console.log('activeRequests',activeRequests)
-  	scrapeURL(link)
-  	.done(function(){
-  		//links before links_arr[counter] have already been written
-  	if(counter !== links_arr.length){
-  		concurrentRequests(links_arr[counter]);
-  	 	 counter++;
-  	     activeRequests--;
-  	     if(activeRequests==0){
-  	     	console.log('Done!')
-  	     }
-  		}
-  	else{
-  		console.log('All links written to file')
-  	}	
-  	  
-  	})
+	scrapeURL(link)
+	.done(function(){
+		//links before links_arr[counter] have already been written
+	if(counter !== links_arr.length){
+		concurrentRequests(links_arr[counter]);
+		 counter++;
+		 activeRequests--;
+		 if(activeRequests==0){
+			console.log('Done!')
+		 }
+		}
+	else{
+		console.log('All links written to file')
+	}	
+	  
+	})
   }
 
 
@@ -71,7 +76,7 @@ function looper(links_arr) {
 	}
 }
 
-var url = 'http://www.medium.com/'
+
 console.log('...scraping',url)
 
 scrapeURL(url)
@@ -79,14 +84,10 @@ scrapeURL(url)
 	activeRequests = 0
 	// console.log('resp',resp)
 	looper(resp)
-	//make looper async?
 
 },function(err){
 	console.log('ERROR',err)
 })
-
-
-
 
 
 
