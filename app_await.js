@@ -23,28 +23,25 @@ function scrapeURL (url){
 
 	return new Promise(function(resolve,reject){
 
-				request(url , function(err,resp,body){
-				if(err){
-					reject(err)
-				}
-				else{
+		request(url , function(err,resp,body){
+			if(err){
+				reject(err)
+			}
+			else{
 				var $ = cheerio.load(body);
 				$('a').each(function() {
-				var text = $(this).text();
-				var link = $(this).attr('href');
-				//check for duplicate links in the array
-				if(link && link.includes('http') && link!==url  && !links_arr.includes(link) && link.match(/medium/) ){
-					links_arr.push(link)
-					file.write(link+'\n')
-					resolve(links_arr)
+					var text = $(this).text();
+					var link = $(this).attr('href');
+					//check for duplicate links in the array
+					if(link && link.includes('http') && link!==url  && !links_arr.includes(link) && link.match(/medium/) ){
+						links_arr.push(link)
+						file.write(link+'\n')
 					}
-				
+
 				})
-
+				resolve(links_arr)
 			}
-
 		})
-
 	})
 
 }
